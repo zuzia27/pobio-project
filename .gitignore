@@ -1,0 +1,34 @@
+# --- GLOBAL ---
+.DS_Store
+.env
+*.log
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+
+# --- PYTHON BACKEND ---
+venv/
+env/
+.venv/
+instance/
+*.egg-info/
+backend/__pycache__/
+backend/.env
+
+# --- FRONTEND (Node.js / React / Vite) ---
+node_modules/
+frontend/node_modules/
+frontend/.env
+frontend/dist/
+frontend/build/
+frontend/.config/
+
+# --- SYSTEM FILES ---
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
