@@ -1,24 +1,35 @@
 from flask import Blueprint, request, jsonify
 from models import db, UserTask, UserProfile
 from utils import calculate_global_vector
+from models import db, User, UserTask
+
 
 tasks_bp = Blueprint('tasks', __name__)
 
-@tasks_bp.route('/api/save_task_vector', methods=['POST'])
+@tasks_bp.route("/api/save_task_vector", methods=["POST"])
 def save_task_vector():
-    """
-    Zapisuje wektor cech biometrycznych dla pojedynczego zadania.
-    Wymaga: user_id, task_name, feature_vector
-    """
-    data = request.get_json()
+    data = request.get_json() or {}
+    user_id = data.get("user_id")
+    task_name = data.get("task_name")
+    feature_vector = data.get("feature_vector")
+
+    if user_id is None or task_name is None or feature_vector is None:
+        return jsonify({"message": "user_id, task_name and feature_vector are required"}), 400
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+
     task = UserTask(
-        user_id=data['user_id'],
-        task_name=data['task_name'],
-        feature_vector=data['feature_vector']
+        user_id=user.id,
+        task_name=task_name,
+        feature_vector=feature_vector,
     )
     db.session.add(task)
     db.session.commit()
-    return jsonify({"message": "Task vector saved!", "task_id": task.id})
+
+    return jsonify({"message": "Task vector saved!", "task_id": task.id}), 201
+
 
 @tasks_bp.route('/api/save_global_vector', methods=['POST'])
 def save_global_vector():

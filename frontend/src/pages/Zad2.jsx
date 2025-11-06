@@ -3,6 +3,7 @@ import { HelpCircle } from 'lucide-react'
 import UserHeader from '../components/UserHeader'
 import TaskCompletionModal from '../components/TaskCompletionModal'
 import LoginResultModal from '../components/LoginResultModal'
+import axios from 'axios'
 
 const Zad2 = () => {
   const [selectedAnswer, setSelectedAnswer] = useState(null)
@@ -12,34 +13,117 @@ const Zad2 = () => {
   const [loginDistance, setLoginDistance] = useState(0)
   const [isLoginMode, setIsLoginMode] = useState(false)
 
-  useEffect(() => {
+  // STANY DO POMIARÓW
+  const [startTime, setStartTime] = useState(null)
+  const [firstMoveTime, setFirstMoveTime] = useState(null)
+  const [mouseMoves, setMouseMoves] = useState([])
+  const [clicks, setClicks] = useState(0)
+  const [lastPos, setLastPos] = useState(null)
 
+  // inicjalizacja trybu i startTime
+  useEffect(() => {
     window.scrollTo(0, 0)
-    
     const loginMode = localStorage.getItem('loginMode') === 'true'
     const loginTask = localStorage.getItem('loginTask')
     setIsLoginMode(loginMode && loginTask === 'zad2')
+    setStartTime(Date.now())
   }, [])
 
-  const handleAnswerSelect = (answerId) => {
+  // zbieranie ruchów myszy i kliknięć
+  useEffect(() => {
+    const handleMove = (e) => {
+      if (!firstMoveTime) setFirstMoveTime(Date.now())
+      if (!lastPos) {
+        setLastPos({ x: e.clientX, y: e.clientY })
+        return
+      }
+
+      const dx = e.clientX - lastPos.x
+      const dy = e.clientY - lastPos.y
+      const dist = Math.sqrt(dx * dx + dy * dy)
+
+      setMouseMoves((prev) => [...prev, dist])
+      setLastPos({ x: e.clientX, y: e.clientY })
+    }
+
+    const handleClick = () => setClicks((prev) => prev + 1)
+
+    window.addEventListener('mousemove', handleMove)
+    window.addEventListener('click', handleClick)
+
+    return () => {
+      window.removeEventListener('mousemove', handleMove)
+      window.removeEventListener('click', handleClick)
+    }
+  }, [firstMoveTime, lastPos])
+
+  const handleAnswerSelect = async (answerId) => {
     setSelectedAnswer(answerId)
-    
-    setTimeout(() => {
+
+    // dajemy lekkie opóźnienie jak wcześniej
+    setTimeout(async () => {
+      // policz wektor na podstawie zebranych danych
+      const endTime = Date.now()
+      const duration = startTime ? (endTime - startTime) / 1000 : 1
+
+      const reaction_time = firstMoveTime ? (firstMoveTime - startTime) / 1000 : 0
+
+      const smoothness =
+        mouseMoves.length > 1
+          ? 1 - Math.min(1, (Math.max(...mouseMoves) - Math.min(...mouseMoves)) / 500)
+          : 0
+
+      const interaction_speed = clicks / duration
+
+      const vector = [
+        Number(reaction_time.toFixed(3)),
+        Number(smoothness.toFixed(3)),
+        Number(interaction_speed.toFixed(3)),
+      ]
+
+      console.log('📊 Wektor z Zad2:', vector)
 
       const loginMode = localStorage.getItem('loginMode') === 'true'
       const loginTask = localStorage.getItem('loginTask')
       const isLogin = loginMode && loginTask === 'zad2'
-      
+
       if (isLogin) {
-        // Symuluj autoryzację
-        const success = Math.random() < 0.7
-        const distance = success ? Math.random() * 0.2 : 0.3 + Math.random() * 0.3
-        
-        setLoginSuccess(success)
-        setLoginDistance(distance)
+        //  TRYB LOGOWANIA BIOMETRYCZNEGO
+        try {
+          const res = await axios.post('http://localhost:5001/login_biometric', {
+            first_name: localStorage.getItem('first_name'),
+            last_name: localStorage.getItem('last_name'),
+            vector_login: vector,
+          })
+          console.log('Odpowiedź login_biometric (zad2):', res.data)
+          setLoginSuccess(res.data.authenticated)
+          setLoginDistance(res.data.distance)
+        } catch (err) {
+          console.error('Błąd logowania biometrycznego (zad2):', err)
+          setLoginSuccess(false)
+          setLoginDistance(0)
+        }
         setShowLoginResult(true)
       } else {
-        // Tryb rejestracji
+        // 📝 TRYB REJESTRACJI – zapisujemy wektor z zadania 2
+        const storedUserId = localStorage.getItem('user_id')
+        if (!storedUserId) {
+          alert('Brak user_id – najpierw się zarejestruj.')
+          console.error('Brak user_id w localStorage')
+          return
+        }
+
+        try {
+          const res = await axios.post('http://localhost:5001/api/save_task_vector', {
+            user_id: Number(storedUserId),
+            task_name: 'zad2',
+            feature_vector: vector,
+          })
+          console.log('✅ Wektor Zad2 zapisany:', res.data)
+        } catch (err) {
+          console.error('❌ Błąd zapisu wektora Zad2:', err)
+        }
+
         setShowModal(true)
       }
     }, 300)
@@ -71,7 +155,6 @@ const Zad2 = () => {
       <main className="flex-1 bg-gray-50 py-8 px-4">
         <div className="max-w-4xl mx-auto">
           <article className="space-y-8">
-
             <header className="pb-4">
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
                 Tytuł artykułu
@@ -179,13 +262,13 @@ const Zad2 = () => {
         </div>
       </main>
 
-      <TaskCompletionModal 
+      <TaskCompletionModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         nextTask="/zad3"
       />
 
-      <LoginResultModal 
+      <LoginResultModal
         isOpen={showLoginResult}
         onClose={() => setShowLoginResult(false)}
         success={loginSuccess}

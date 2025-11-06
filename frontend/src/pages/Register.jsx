@@ -35,6 +35,7 @@ function Register() {
       if (response.ok) {
 
         localStorage.setItem('user_id', data.user_id)
+        localStorage.setItem('userId', data.user_id) 
         localStorage.setItem('first_name', data.first_name)
         localStorage.setItem('last_name', data.last_name)
         localStorage.setItem('currentTask', '1')
