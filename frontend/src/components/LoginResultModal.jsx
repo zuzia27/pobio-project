@@ -15,9 +15,6 @@ const LoginResultModal = ({ isOpen, onClose, success, distance, threshold }) => 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center animate-fade-in">
-        <div className="mb-4 text-6xl">
-          {success ? '✅' : '❌'}
-        </div>
         <h2 className="text-2xl font-bold text-gray-900 mb-3">
           {success ? 'Autoryzacja udana!' : 'Autoryzacja nieudana'}
         </h2>

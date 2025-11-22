@@ -4,23 +4,42 @@ import UserHeader from '../components/UserHeader'
 import TaskCompletionModal from '../components/TaskCompletionModal'
 import LoginResultModal from '../components/LoginResultModal'
 import axios from 'axios'
+import { getZad2Content, isCorrectAnswer } from '../data/zad2-content'
+import { getContentMode } from '../helpers'
 
 const Zad2 = () => {
+  const [contentMode] = useState(() => getContentMode())
+  const [content] = useState(() => getZad2Content(contentMode))
+  const [answers] = useState(() => content.answers)
+  
   const [selectedAnswer, setSelectedAnswer] = useState(null)
   const [showModal, setShowModal] = useState(false)
   const [showLoginResult, setShowLoginResult] = useState(false)
   const [loginSuccess, setLoginSuccess] = useState(false)
   const [loginDistance, setLoginDistance] = useState(0)
+  const [loginThreshold, setLoginThreshold] = useState(0.18)
   const [isLoginMode, setIsLoginMode] = useState(false)
+  const [taskCompleted, setTaskCompleted] = useState(false)
 
-  // STANY DO POMIARÓW
+  const [showError, setShowError] = useState(false)
+  const [errorShownTime, setErrorShownTime] = useState(null)
+
   const [startTime, setStartTime] = useState(null)
   const [firstMoveTime, setFirstMoveTime] = useState(null)
-  const [mouseMoves, setMouseMoves] = useState([])
-  const [clicks, setClicks] = useState(0)
+  
+  const [mouseSpeeds, setMouseSpeeds] = useState([])
   const [lastPos, setLastPos] = useState(null)
+  const [lastMoveTime, setLastMoveTime] = useState(null)
+  
+  const [scrollData, setScrollData] = useState([])
+  const [lastScrollY, setLastScrollY] = useState(0)
+  const [lastScrollTime, setLastScrollTime] = useState(null)
+  const [scrollPauses, setScrollPauses] = useState(0)
+  const [scrollEndTime, setScrollEndTime] = useState(null)
+  
+  const [answerHistory, setAnswerHistory] = useState([])
+  const [scrollAfterError, setScrollAfterError] = useState(false)
 
-  // inicjalizacja trybu i startTime
   useEffect(() => {
     window.scrollTo(0, 0)
     const loginMode = localStorage.getItem('loginMode') === 'true'
@@ -29,12 +48,20 @@ const Zad2 = () => {
     setStartTime(Date.now())
   }, [])
 
-  // zbieranie ruchów myszy i kliknięć
+  // Listener: ruchy myszy 
   useEffect(() => {
     const handleMove = (e) => {
-      if (!firstMoveTime) setFirstMoveTime(Date.now())
+      if (taskCompleted) return 
+      
+      const now = Date.now()
+      
+      if (!firstMoveTime) {
+        setFirstMoveTime(now)
+      }
+      
       if (!lastPos) {
         setLastPos({ x: e.clientX, y: e.clientY })
+        setLastMoveTime(now)
         return
       }
 
@@ -42,98 +69,211 @@ const Zad2 = () => {
       const dy = e.clientY - lastPos.y
       const dist = Math.sqrt(dx * dx + dy * dy)
 
-      setMouseMoves((prev) => [...prev, dist])
+      // Oblicz prędkość
+      const timeDelta = (now - lastMoveTime) / 1000
+      if (timeDelta > 0 && dist > 0) {
+        const speed = dist / timeDelta
+        setMouseSpeeds((prev) => [...prev, speed])
+      }
+
       setLastPos({ x: e.clientX, y: e.clientY })
+      setLastMoveTime(now)
     }
 
-    const handleClick = () => setClicks((prev) => prev + 1)
-
     window.addEventListener('mousemove', handleMove)
-    window.addEventListener('click', handleClick)
 
     return () => {
       window.removeEventListener('mousemove', handleMove)
-      window.removeEventListener('click', handleClick)
     }
-  }, [firstMoveTime, lastPos])
+  }, [firstMoveTime, lastPos, lastMoveTime, taskCompleted])
 
-  const handleAnswerSelect = async (answerId) => {
+  // Listener: scrollowanie + wykrywanie pauz
+  useEffect(() => {
+    let pauseTimer = null
+
+    const handleScroll = () => {
+      if (taskCompleted) return 
+      
+      const now = Date.now()
+      const currentScrollY = window.scrollY
+      const delta = currentScrollY - lastScrollY
+      
+      if (delta !== 0) {
+        // Sprawdź czy scroll w górę po pokazaniu błędu (powrót do tekstu)
+        if (delta < 0 && errorShownTime !== null) {
+          setScrollAfterError(true)
+        }
+        
+        setScrollData((prev) => [...prev, { delta, position: currentScrollY, time: now }])
+        setLastScrollY(currentScrollY)
+        setLastScrollTime(now)
+        setScrollEndTime(null) 
+        
+        // Reset timera pauzy
+        if (pauseTimer) clearTimeout(pauseTimer)
+        
+        // Ustaw nowy timer - jeśli 500ms bez scrolla to była pauza
+        pauseTimer = setTimeout(() => {
+          setScrollPauses((prev) => prev + 1)
+          if (!scrollEndTime) {
+            setScrollEndTime(Date.now())
+          }
+        }, 500)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    setLastScrollY(window.scrollY)
+    setLastScrollTime(Date.now())
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (pauseTimer) clearTimeout(pauseTimer)
+    }
+  }, [lastScrollY, scrollEndTime, errorShownTime, taskCompleted])
+
+  const handleAnswerSelect = (answerId) => {
+
+    setAnswerHistory((prev) => [...prev, { answer: answerId, time: Date.now() }])
+    
     setSelectedAnswer(answerId)
 
-    // dajemy lekkie opóźnienie jak wcześniej
-    setTimeout(async () => {
-      // policz wektor na podstawie zebranych danych
+    setShowError(false)
+  }
+
+  const handleConfirmAnswer = async () => {
+    if (!selectedAnswer) return
+    
+    // Sprawdź czy odpowiedź jest poprawna
+    if (!isCorrectAnswer(contentMode, selectedAnswer)) {
+      setShowError(true)
+      setErrorShownTime(Date.now())
+      setScrollAfterError(false) 
+      return 
+    }
+
+    setTaskCompleted(true)
+
+    // OBLICZ WEKTOR CECH 
       const endTime = Date.now()
       const duration = startTime ? (endTime - startTime) / 1000 : 1
 
-      const reaction_time = firstMoveTime ? (firstMoveTime - startTime) / 1000 : 0
+    // 1. TOTAL TIME [s]
+    const total_time = Number(duration.toFixed(3))
 
-      const smoothness =
-        mouseMoves.length > 1
-          ? 1 - Math.min(1, (Math.max(...mouseMoves) - Math.min(...mouseMoves)) / 500)
-          : 0
+    // 2. READING TIME BEFORE ANSWER [s]
+    // Czas ostatniego scrolla = jeśli był scroll, bierzemy ostatni, w przeciwnym razie startTime
+    const lastScrollTime = scrollData.length > 0 
+      ? scrollData[scrollData.length - 1].time 
+      : startTime
+    const reading_time_before_answer = answerHistory.length > 0
+      ? Math.max(0, Number(((answerHistory[0].time - lastScrollTime) / 1000).toFixed(3)))
+      : 0
 
-      const interaction_speed = clicks / duration
+    // 3. TOTAL SCROLL DISTANCE [px]
+    const total_scroll_distance = scrollData.reduce((sum, s) => sum + Math.abs(s.delta), 0)
 
+    // 4. SCROLL DIRECTION CHANGES [-]
+    let scroll_direction_changes = 0
+    for (let i = 1; i < scrollData.length; i++) {
+      if ((scrollData[i].delta > 0 && scrollData[i-1].delta < 0) ||
+          (scrollData[i].delta < 0 && scrollData[i-1].delta > 0)) {
+        scroll_direction_changes++
+      }
+    }
+
+    // 5. AVG SCROLL SPEED [px/s]
+    let avg_scroll_speed = 0
+    if (scrollData.length > 1) {
+      const scrollDurations = []
+      for (let i = 1; i < scrollData.length; i++) {
+        const timeDelta = (scrollData[i].time - scrollData[i-1].time) / 1000
+        if (timeDelta > 0) {
+          const speed = Math.abs(scrollData[i].delta) / timeDelta
+          scrollDurations.push(speed)
+        }
+      }
+      if (scrollDurations.length > 0) {
+        avg_scroll_speed = Number((scrollDurations.reduce((a, b) => a + b, 0) / scrollDurations.length).toFixed(2))
+      }
+    }
+
+    // 6. SCROLL PAUSE COUNT [-]
+    const scroll_pause_count = scrollPauses
+
+    // 7. AVG MOUSE SPEED [px/s]
+    const avg_mouse_speed = mouseSpeeds.length > 0
+      ? Number((mouseSpeeds.reduce((a, b) => a + b, 0) / mouseSpeeds.length).toFixed(2))
+      : 0
+
+    // 8. ANSWER CHANGES [-]
+    const answer_changes = Math.max(0, answerHistory.length - 1)
+
+    // 9. REREADS TEXT ON ERROR [0/1]
+    // Czy po pokazaniu błędu wraca do tekstu (scroll w górę)?
+    const rereads_text_on_error = scrollAfterError ? 1 : 0
+
+    // ostateczny wektor
       const vector = [
-        Number(reaction_time.toFixed(3)),
-        Number(smoothness.toFixed(3)),
-        Number(interaction_speed.toFixed(3)),
-      ]
-
-      console.log('📊 Wektor z Zad2:', vector)
+      total_time,
+      reading_time_before_answer,
+      total_scroll_distance,
+      scroll_direction_changes,
+      avg_scroll_speed,
+      scroll_pause_count,
+      avg_mouse_speed,
+      answer_changes,
+      rereads_text_on_error
+    ]
 
       const loginMode = localStorage.getItem('loginMode') === 'true'
       const loginTask = localStorage.getItem('loginTask')
       const isLogin = loginMode && loginTask === 'zad2'
 
       if (isLogin) {
-        //  TRYB LOGOWANIA BIOMETRYCZNEGO
+      //  tryb logowania biometrycznego
         try {
           const res = await axios.post('http://localhost:5001/login_biometric', {
             first_name: localStorage.getItem('first_name'),
             last_name: localStorage.getItem('last_name'),
+          task_number: 2,
             vector_login: vector,
           })
-          console.log('Odpowiedź login_biometric (zad2):', res.data)
-          setLoginSuccess(res.data.authenticated)
-          setLoginDistance(res.data.distance)
-        } catch (err) {
-          console.error('Błąd logowania biometrycznego (zad2):', err)
+        setLoginSuccess(res.data.authenticated)
+        setLoginDistance(res.data.distance || 0)
+        setLoginThreshold(res.data.threshold || 0.18)
+      } catch (err) {
+        if (err.response?.data) {
+          setLoginSuccess(err.response.data.authenticated || false)
+          setLoginDistance(err.response.data.distance || 0)
+          setLoginThreshold(err.response.data.threshold || 0.18)
+        } else {
           setLoginSuccess(false)
           setLoginDistance(0)
         }
-        setShowLoginResult(true)
+      }
+      setShowLoginResult(true)
       } else {
-        // 📝 TRYB REJESTRACJI – zapisujemy wektor z zadania 2
+      // tryb rejestracji – zapisujemy wektor zadania
         const storedUserId = localStorage.getItem('user_id')
         if (!storedUserId) {
           alert('Brak user_id – najpierw się zarejestruj.')
-          console.error('Brak user_id w localStorage')
           return
         }
 
         try {
           const res = await axios.post('http://localhost:5001/api/save_task_vector', {
             user_id: Number(storedUserId),
-            task_name: 'zad2',
+          task_name: 'Zad2',
             feature_vector: vector,
           })
-          console.log('✅ Wektor Zad2 zapisany:', res.data)
         } catch (err) {
-          console.error('❌ Błąd zapisu wektora Zad2:', err)
+        console.error('Błąd zapisu wektora Zad2:', err.response?.data || err.message)
         }
 
         setShowModal(true)
       }
-    }, 300)
   }
-
-  const answers = [
-    { id: 'A', label: 'Odpowiedz A' },
-    { id: 'B', label: 'Odpowiedz B' },
-    { id: 'C', label: 'Odpowiedz C' },
-  ]
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -141,7 +281,7 @@ const Zad2 = () => {
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-indigo-200 py-5 px-4">
         <div className="max-w-7xl mx-auto">
           <p className="text-center text-lg md:text-xl text-indigo-900 font-medium">
-            Zadanie: Przeczytaj poniższy artykuł i odpowiedz na pytanie
+            {content.instruction}
           </p>
         </div>
       </div>
@@ -157,74 +297,18 @@ const Zad2 = () => {
           <article className="space-y-8">
             <header className="pb-4">
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
-                Tytuł artykułu
+                {content.title}
               </h1>
             </header>
 
             <div className="space-y-6 text-gray-700 text-lg leading-relaxed">
-              <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-              </p>
-
-              <p>
-                Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-              </p>
-
-              <p>
-                Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.
-              </p>
-
-              <p>
-                Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
-              </p>
-
-              <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-              </p>
-
-              <p>
-                Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-              </p>
-
-              <p>
-                Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.
-              </p>
-
-              <p>
-                Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
-              </p>
-
-              <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-              </p>
-
-              <p>
-                Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-              </p>
-
-              <p>
-                Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.
-              </p>
-
-              <p>
-                Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
-              </p>
-
-              <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-              </p>
-
-              <p>
-                Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-              </p>
-
-              <p>
-                Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.
-              </p>
-
-              <p>
-                Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
-              </p>
+              {content.article.split('\n\n').map((paragraph, index) => 
+                paragraph.trim() && (
+                  <p key={index}>
+                    {paragraph.trim()}
+                  </p>
+                )
+              )}
             </div>
 
             <section className="bg-gray-50 border border-gray-200 rounded-xl p-6 md:p-8 mt-12">
@@ -235,7 +319,7 @@ const Zad2 = () => {
                 </div>
 
                 <p className="text-lg font-medium text-gray-700 pl-9">
-                  Jakie jest główne przesłanie artykułu?
+                  {content.question}
                 </p>
 
                 <div className="space-y-4">
@@ -256,6 +340,25 @@ const Zad2 = () => {
                     </button>
                   ))}
                 </div>
+
+                {showError && (
+                  <div className="pt-4 bg-red-50 border border-red-200 rounded-lg p-4">
+                    <p className="text-red-700 font-medium text-center">
+                      Niepoprawna odpowiedź. Spróbuj ponownie!
+                    </p>
+                  </div>
+                )}
+
+                {selectedAnswer && (
+                  <div className="pt-4">
+                    <button
+                      onClick={handleConfirmAnswer}
+                      className="w-full bg-indigo-600 text-white font-semibold py-4 px-6 rounded-lg hover:bg-indigo-700 transition-colors"
+                    >
+                      Potwierdź odpowiedź
+                    </button>
+                  </div>
+                )}
               </div>
             </section>
           </article>
@@ -273,7 +376,7 @@ const Zad2 = () => {
         onClose={() => setShowLoginResult(false)}
         success={loginSuccess}
         distance={loginDistance}
-        threshold={0.25}
+        threshold={loginThreshold}
       />
     </div>
   )

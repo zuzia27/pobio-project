@@ -20,18 +20,7 @@ with app.app_context():
 
 @app.route('/')
 def home():
-    return {
-        "message": "Biometric Authentication API",
-        "version": "1.0",
-        "endpoints": {
-            "register": "POST /register",
-            "login": "POST /login_biometric",
-            "save_task": "POST /api/save_task_vector",
-            "save_global": "POST /api/save_global_vector",
-            "get_tasks": "GET /api/get_user_tasks/<user_id>"
-        }
-    }
+    return "Serwer dziala"
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5001)
-
