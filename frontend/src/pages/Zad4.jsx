@@ -306,9 +306,18 @@ const Zad4 = () => {
                   </div>
                 </div>
 
-                <div className="mb-4 h-64 bg-purple-50 rounded-lg flex items-center justify-center">
-                  <Image className="w-24 h-24 text-purple-400" strokeWidth={1.5} />
-                </div>
+                {post.imageUrl ? (
+                  <img
+                    src={post.imageUrl}
+                    alt={post.imageAlt || 'Post image'}
+                    className="mb-4 w-full h-64 object-cover rounded-lg"
+                  />
+                ) : (
+                  <div className="mb-4 h-64 bg-purple-50 rounded-lg flex items-center justify-center">
+                    <Image className="w-24 h-24 text-purple-400" strokeWidth={1.5} />
+                  </div>
+                )}
+
 
                 <p className="text-gray-700 leading-relaxed">{post.text}</p>
               </div>

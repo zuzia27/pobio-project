@@ -1,3 +1,7 @@
+// data/zad5-content.js
+
+// --- DANE DLA REJESTRACJI ---
+
 const registrationTabsData = [
   { 
     id: 'home', 
@@ -83,7 +87,6 @@ const registrationProjects = [
   }
 ];
 
-// Treść podstron dla rejestracji
 const registrationPageContent = {
   home: {
     title: "Witamy w BioCorp",
@@ -160,11 +163,192 @@ const registrationPageContent = {
   }
 };
 
-const loginPageContent = registrationPageContent;
+// --- DANE DLA LOGOWANIA ---
+
+const loginTabsData = [
+  { 
+    id: 'home', 
+    label: 'Panel główny', 
+    emoji: '📊',
+    subTabs: null
+  },
+  { 
+    id: 'about', 
+    label: 'O firmie', 
+    emoji: '🏢',
+    subTabs: [
+      { id: 'history', label: 'Kim jesteśmy' },
+      { id: 'team', label: 'Zespół projektowy' },
+      { id: 'values', label: 'Nasze podejście' }
+    ]
+  },
+  { 
+    id: 'services', 
+    label: 'Rozwiązania', 
+    emoji: '🛡️',
+    subTabs: [
+      { id: 'biometric', label: 'Platformy biometryczne' },
+      { id: 'consulting', label: 'Consulting bezpieczeństwa' },
+      { id: 'projects', label: 'Realizacje' }
+    ]
+  },
+  { 
+    id: 'contact', 
+    label: 'Wsparcie', 
+    emoji: '💬',
+    subTabs: [
+      { id: 'info', label: 'Dane kontaktowe' },
+      { id: 'form', label: 'Zgłoszenie serwisowe' }
+    ]
+  },
+];
+
+// projekty mogą zostać te same – inne są teksty i zadanie
+const loginProjects = [
+  {
+    id: 'metro',
+    name: 'MetroGuard',
+    client: 'Zarząd Transportu Miejskiego',
+    date: '2022-11',
+    description: 'System kontroli dostępu dla zaplecza technicznego sieci tramwajowej.',
+    scope: 'Zakres: 24 punkty kontroli, integracja z systemem przepustek pracowniczych',
+    reference: 'MG-2022-11-0042',
+    borderColor: 'border-sky-500',
+    hoverColor: 'hover:bg-sky-50'
+  },
+  {
+    id: 'hospital',
+    name: 'SecureHospital',
+    client: 'Szpital Kliniczny NovaMed',
+    date: '2023-07',
+    description: 'Wdrożenie biometrii dla personelu medycznego przy wejściu do stref krytycznych.',
+    scope: 'Zakres: 40 czytników, logowanie biometryczne do stacji roboczych',
+    reference: 'SH-2023-07-0178',
+    borderColor: 'border-emerald-500',
+    hoverColor: 'hover:bg-emerald-50'
+  },
+  {
+    id: 'govid',
+    name: 'GovID 2.0',
+    client: 'Agencja Bezpieczeństwa Cyfrowego',
+    date: '2023-10',
+    description: 'Platforma zdalnej weryfikacji tożsamości obywateli z użyciem biometrii twarzy.',
+    scope: 'Zakres: 500k użytkowników pilotażowych, integracja z usługami publicznymi',
+    reference: 'GID-2023-10-0931',
+    borderColor: 'border-orange-500',
+    hoverColor: 'hover:bg-orange-50'
+  },
+  {
+    id: 'campus',
+    name: 'SmartCampus ID',
+    client: 'Uniwersytet Miejski',
+    date: '2024-03',
+    description: 'Cyfrowa legitymacja studencka z elementami biometrii behawioralnej.',
+    scope: 'Zakres: 15 budynków, logowanie do systemu dziekanatu i bibliotek',
+    reference: 'SCI-2024-03-0012',
+    borderColor: 'border-purple-500',
+    hoverColor: 'hover:bg-purple-50'
+  }
+];
+
+
+const loginPageContent = {
+  home: {
+    title: "Panel klienta BioCorp",
+    paragraphs: [
+      "Witamy w panelu klienta BioCorp. Tutaj znajdziesz informacje o wdrożonych projektach biometrycznych.",
+      "Przejdź po zakładkach, aby zobaczyć szczegóły współpracy z różnymi instytucjami."
+    ]
+  },
+  aboutHistory: {
+    title: "Kim jesteśmy",
+    paragraphs: [
+      "BioCorp specjalizuje się w systemach biometrycznych dla sektora finansowego, publicznego i edukacyjnego.",
+      "Od kilku lat wspieramy duże organizacje w zwiększaniu poziomu bezpieczeństwa przy zachowaniu wygody użytkowników.",
+      "Nasze rozwiązania działają m.in. w bankach, na lotniskach i na uczelniach wyższych."
+    ]
+  },
+  aboutTeam: {
+    title: "Zespół projektowy",
+    intro: "Zespół BioCorp łączy doświadczenie z zakresu cyberbezpieczeństwa, analizy zachowania użytkowników oraz projektowania systemów na dużą skalę.",
+    cards: [
+      { title: "Biometria behawioralna", description: "Zespół odpowiedzialny za analizę sposobu poruszania się po systemach." },
+      { title: "Wdrożenia korporacyjne", description: "Zespół prowadzący projekty dla klientów z sektora bankowego i publicznego." }
+    ]
+  },
+  aboutValues: {
+    title: "Nasze podejście",
+    values: [
+      { title: "Bezpieczeństwo i wygoda", description: "Projektujemy systemy tak, aby były bezpieczne, ale nie uciążliwe w codziennym użyciu." },
+      { title: "Skalowalność", description: "Systemy BioCorp są przygotowane na tysiące równoczesnych użytkowników." },
+      { title: "Współpraca z klientem", description: "Projektujemy rozwiązania w oparciu o realne potrzeby organizacji." }
+    ]
+  },
+  servicesBiometric: {
+    title: "Rozwiązania biometryczne",
+    intro: "BioCorp dostarcza zarówno klasyczne systemy biometrii fizycznej, jak i rozwiązania analizujące styl korzystania z aplikacji.",
+    systems: [
+      { title: "Dostęp do stref chronionych", description: "Kontrola wejścia do serwerowni, laboratoriów i stref o ograniczonym dostępie." },
+      { title: "Logowanie bez hasła", description: "Weryfikacja użytkownika na podstawie jego zachowania w systemie." },
+      { title: "Monitorowanie sesji", description: "Wykrywanie nietypowej aktywności w czasie pracy użytkownika." },
+      { title: "Integracje z istniejącymi systemami", description: "Możliwość podłączenia systemów klienta do platformy BioCorp." }
+    ]
+  },
+  servicesConsulting: {
+    title: "Consulting bezpieczeństwa",
+    intro: "Pomagamy organizacjom zaplanować i wdrożyć rozwiązania biometryczne dopasowane do ich skali i specyfiki.",
+    services: [
+      { title: "Analiza potrzeb", description: "Wspólnie z klientem identyfikujemy obszary wymagające dodatkowego zabezpieczenia." },
+      { title: "Projekt rozwiązania", description: "Dobór właściwych technologii i architektury systemu." },
+      { title: "Wsparcie po wdrożeniu", description: "Pomoc w utrzymaniu i rozwijaniu systemu przez cały okres współpracy." }
+    ]
+  },
+  servicesProjects: {
+    title: "Realizacje BioCorp",
+    intro: "Poniżej prezentujemy wybrane projekty wdrożeniowe dla naszych klientów."
+  },
+  contactInfo: {
+    title: "Dane kontaktowe",
+    sections: [
+      { emoji: "📧", title: "Email", items: ["biuro@biocorp.pl", "support@biocorp.pl"] },
+      { emoji: "📞", title: "Telefon", items: ["+48 22 456 78 90 (Biuro)", "+48 22 456 78 91 (Dział wsparcia)"] },
+      { emoji: "📍", title: "Adres", items: ["ul. Bezpieczna 10", "00-950 Warszawa"] },
+      { emoji: "🕒", title: "Godziny pracy", items: ["Pn–Pt: 9:00–17:00", "Sb–Nd: wsparcie zdalne dla klientów kontraktowych"] }
+    ]
+  },
+  contactForm: {
+    title: "Skontaktuj się z nami",
+    fields: [
+      { label: "Imię i nazwisko", type: "text", placeholder: "np. Anna Kowalska" },
+      { label: "Email", type: "email", placeholder: "anna.kowalska@example.com" },
+      { label: "Temat", type: "text", placeholder: "np. Zapytanie dotyczące wdrożenia" },
+      { label: "Wiadomość", type: "textarea", rows: 5, placeholder: "Opisz, w czym możemy pomóc..." }
+    ],
+    buttonText: "Wyślij"
+  }
+};
+
+// --- WARIANTY ZADAŃ DLA LOGOWANIA ---
+
+const loginTaskVariants = [
+  {
+    id: 'earliest',
+    instruction: "Znajdź projekt zrealizowany NAJWCZEŚNIEJ",
+    mode: 'earliest'
+  },
+  {
+    id: 'latest',
+    instruction: "Znajdź projekt zrealizowany NAJPOŹNIEJ",
+    mode: 'latest'
+  }
+];
+
+
+// --- GŁÓWNA KONFIGURACJA ZADANIA 5 ---
 
 export const zad5Content = {
   registration: {
-    instruction: "Znajdź numer referencyjny ostatniego zrealizowanego projektu przez firmę BioCorp",
+    instruction: "Znajdź projekt zrealizowany dla Banku Narodowego Polska",
     companyName: "BioCorp",
     tabs: registrationTabsData,
     projects: registrationProjects,
@@ -180,31 +364,70 @@ export const zad5Content = {
     },
     minimalClicks: 3
   },
-  
-  login: {
-    instruction: "Znajdź numer referencyjny ostatniego zrealizowanego projektu przez firmę BioCorp", // TYMCZASOWO
-    companyName: "BioCorp", // TYMCZASOWO
-    tabs: registrationTabsData, // TYMCZASOWO
-    projects: registrationProjects, // TYMCZASOWO
-    correctProjectId: 'bank', // TYMCZASOWO
-    pageContent: loginPageContent, // TYMCZASOWO
-    tabOrder: ['home', 'about', 'services', 'contact'], // TYMCZASOWO
-    initialTab: 'home', // TYMCZASOWO
-    projectsPageId: { parent: 'services', sub: 'projects' }, // TYMCZASOWO
-    correctPath: { // TYMCZASOWO
+
+  loginBase: {
+    companyName: "BioCorp",
+    tabs: loginTabsData,
+    projects: loginProjects,
+    pageContent: loginPageContent,
+    tabOrder: ['home', 'about', 'services', 'contact'],
+    initialTab: 'home',
+    projectsPageId: { parent: 'services', sub: 'projects' },
+    correctPath: {
       tab: 'services',
       subtab: { parent: 'services', sub: 'projects' },
-      project: 'bank'
+      project: 'airport'
     },
-    minimalClicks: 3 // TYMCZASOWO
+    minimalClicks: 3
   }
 };
 
+// --- FUNKCJE UŻYWANE PRZEZ Zad5.jsx ---
+
 export const getZad5Content = (mode) => {
+  if (mode === 'login') {
+    // losujemy, czy szukamy najstarszego czy najnowszego projektu
+    const variant = loginTaskVariants[Math.floor(Math.random() * loginTaskVariants.length)];
+
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem('zad5_login_mode', variant.mode);
+    }
+
+    return {
+      ...zad5Content.loginBase,
+      instruction: variant.instruction
+    };
+  }
+
   return zad5Content[mode] || zad5Content.registration;
 };
 
+
 export const isCorrectProject = (mode, projectId) => {
-  const content = getZad5Content(mode);
-  return content.correctProjectId === projectId;
+  if (mode === 'login') {
+    let variantMode = 'earliest';
+
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const stored = window.localStorage.getItem('zad5_login_mode');
+      if (stored === 'latest' || stored === 'earliest') {
+        variantMode = stored;
+      }
+    }
+
+    // wyznacz projekt z najstarszą datą
+    let earliest = loginProjects[0];
+    let latest = loginProjects[0];
+
+    for (const p of loginProjects) {
+      if (p.date < earliest.date) earliest = p;
+      if (p.date > latest.date) latest = p;
+    }
+
+    const targetId = variantMode === 'earliest' ? earliest.id : latest.id;
+    return projectId === targetId;
+  }
+
+  // rejestracja – dalej klikamy konkret: Bank Narodowy Polska
+  return projectId === zad5Content.registration.correctProjectId;
 };
+

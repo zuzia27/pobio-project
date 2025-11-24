@@ -12,6 +12,21 @@ const registrationProducts = [
   { id: 11, name: 'Miska ceramiczna', description: 'Kolorowa miska w odcieniu fioletu. Pojemność 500ml, idealna do zupy i płatków.', price: 38 },
   { id: 12, name: 'Zestaw silikonowych przyborów', description: 'Kolorowy zestaw 6 silikonowych przyborów kuchennych. Odporny na wysokie temperatury.', price: 65 },
 ];
+const loginProducts = [
+  { id: 1,  name: 'Szklanka wysoka',  description: 'Wysoka szklanka z grubego szkła, idealna do drinków.',   price: 32 },
+  { id: 2,   name: 'Kubek matowy',   description: 'Ceramiczny kubek w ciemnym grafitowym kolorze.',   price: 44  },
+  { id: 3,  name: 'Filiżanka elegancka',  description: 'Porcelanowa filiżanka z delikatnym żłobieniem.',  price: 39  },
+  { id: 4,  name: 'Szklanka niska',  description: 'Niska szklanka do whisky o grubym dnie.',   price: 27  },
+  { id: 5,   name: 'Miska śniadaniowa',   description: 'Ceramiczna miska idealna na owsiankę.',   price: 31  },
+  { id: 6,   name: 'Kubek czerwony',   description: 'Kubek ceramiczny w żywym czerwonym kolorze.',   price: 33  },
+  { id: 7,   name: 'Szklanka latte',   description: 'Wysoka szklanka do latte, półprzezroczysta.',   price: 36  },
+  { id: 8,  name: 'Talerz obiadowy',   description: 'Porcelanowy talerz o średnicy 26 cm.',   price: 52  },
+  { id: 9, name: 'Karafka szklana',  description: 'Karafka na wodę wykonana z grubego szkła.',  price: 58  },
+  { id: 10,   name: 'Kubek zielony',  description: 'Ceramiczny kubek w ciemnozielonym odcieniu.', price: 24  },
+  { id: 11,  name: 'Szklanka do soków', description: 'Uniwersalna szklanka 300ml, lekko barwiona.', price: 18 },
+  { id: 12,  name: 'Szklanka klasyczna',  description: 'Klasyczna, przezroczysta szklanka wykonana z cienkiego szkła. 250ml.',  price: 19  } //PRAWIDŁOWA
+];
+
 
 export const zad1Content = {
   registration: {
@@ -22,10 +37,10 @@ export const zad1Content = {
   },
   
   login: {
-    title: "Zadanie: Znajdź niebieski kubek w cenie poniżej 50 zł",
-    storeName: "BioShop",
-    products: registrationProducts, // TYMCZASOWO - te same produkty
-    correctProductId: 6 // TYMCZASOWO
+    title: "Zadanie: Znajdź przezroczystą szklankę w cenie poniżej 30 zł",
+    storeName: "BioShop – logowanie",
+    products: loginProducts,
+    correctProductId: 12,
   }
 };
 

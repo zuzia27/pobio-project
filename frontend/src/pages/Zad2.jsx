@@ -7,10 +7,21 @@ import axios from 'axios'
 import { getZad2Content, isCorrectAnswer } from '../data/zad2-content'
 import { getContentMode } from '../helpers'
 
+const shuffleArray = (array) => {
+  const copy = [...array]
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[copy[i], copy[j]] = [copy[j], copy[i]]
+  }
+  return copy
+}
+const LETTERS = ['A', 'B', 'C']
+
+
 const Zad2 = () => {
   const [contentMode] = useState(() => getContentMode())
   const [content] = useState(() => getZad2Content(contentMode))
-  const [answers] = useState(() => content.answers)
+  const [shuffledAnswers] = useState(() => shuffleArray(content.answers))
   
   const [selectedAnswer, setSelectedAnswer] = useState(null)
   const [showModal, setShowModal] = useState(false)
@@ -322,24 +333,30 @@ const Zad2 = () => {
                   {content.question}
                 </p>
 
-                <div className="space-y-4">
-                  {answers.map((answer) => (
-                    <button
-                      key={answer.id}
-                      onClick={() => handleAnswerSelect(answer.id)}
-                      className={`w-full flex items-center gap-4 p-4 md:p-5 rounded-lg border-2 transition-all ${
-                        selectedAnswer === answer.id
-                          ? 'border-indigo-500 bg-indigo-50'
-                          : 'border-gray-200 bg-white hover:border-indigo-300'
-                      }`}
-                    >
-                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-600 font-semibold flex-shrink-0">
-                        {answer.id}
-                      </span>
-                      <span className="text-gray-700 text-base text-left">{answer.label}</span>
-                    </button>
-                  ))}
-                </div>
+                  <div className="space-y-4">
+                    {shuffledAnswers.map((answer, index) => (
+                      <button
+                        key={answer.id}
+                        onClick={() => handleAnswerSelect(answer.id)}
+                        className={`w-full flex items-center gap-4 p-4 md:p-5 rounded-lg border-2 transition-all ${
+                          selectedAnswer === answer.id
+                            ? 'border-indigo-500 bg-indigo-50'
+                            : 'border-gray-200 bg-white hover:border-indigo-300'
+                        }`}
+                      >
+                        {/* 👉 literka A/B/C zależy tylko od pozycji (index), NIE od answer.id */}
+                        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-600 font-semibold flex-shrink-0">
+                          {LETTERS[index]}
+                        </span>
+
+                        {/* 👉 tekst jest przetasowany */}
+                        <span className="text-gray-700 text-base text-left">
+                          {answer.label}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+
 
                 {showError && (
                   <div className="pt-4 bg-red-50 border border-red-200 rounded-lg p-4">

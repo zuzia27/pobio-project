@@ -7,6 +7,16 @@ import axios from 'axios'
 import { getZad1Content, isCorrectProduct } from '../data/zad1-content'
 import { getContentMode } from '../helpers'
 
+// 🔁 Funkcja mieszająca tablicę (poza komponentem!)
+const shuffleArray = (array) => {
+  const copy = [...array]
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[copy[i], copy[j]] = [copy[j], copy[i]]
+  }
+  return copy
+}
+
 const ProductImage = () => (
   <Image className="w-full h-full text-purple-400" strokeWidth={1.5} />
 )
@@ -14,8 +24,10 @@ const ProductImage = () => (
 const Zad1 = () => {
   const [contentMode] = useState(() => getContentMode())
   const [content] = useState(() => getZad1Content(contentMode))
-  const [products] = useState(() => content.products)
-  
+
+  // 🧩 Tu tworzymy jednorazowo przetasowaną listę produktów
+  const [shuffledProducts] = useState(() => shuffleArray(content.products))
+
   const [showModal, setShowModal] = useState(false)
   const [showLoginResult, setShowLoginResult] = useState(false)
   const [loginSuccess, setLoginSuccess] = useState(false)
@@ -26,17 +38,17 @@ const Zad1 = () => {
 
   const [startTime, setStartTime] = useState(null)
   const [firstMoveTime, setFirstMoveTime] = useState(null)
-  
+
   const [mouseMoves, setMouseMoves] = useState([])
   const [mouseSpeeds, setMouseSpeeds] = useState([])
   const [lastPos, setLastPos] = useState(null)
   const [lastMoveTime, setLastMoveTime] = useState(null)
-  
+
   const [clickedProducts, setClickedProducts] = useState([])
-  
+
   const [scrollData, setScrollData] = useState([])
   const [lastScrollY, setLastScrollY] = useState(0)
-  
+
   const [hoveredProducts, setHoveredProducts] = useState(new Set())
   const [hoverStartTimes, setHoverStartTimes] = useState({})
   const [hoverDurations, setHoverDurations] = useState([])
@@ -53,13 +65,13 @@ const Zad1 = () => {
   useEffect(() => {
     const handleMove = (e) => {
       if (taskCompleted) return
-      
+
       const now = Date.now()
-      
+
       if (!firstMoveTime) {
         setFirstMoveTime(now)
       }
-      
+
       if (!lastPos) {
         setLastPos({ x: e.clientX, y: e.clientY })
         setLastMoveTime(now)
@@ -69,9 +81,8 @@ const Zad1 = () => {
       const dx = e.clientX - lastPos.x
       const dy = e.clientY - lastPos.y
       const dist = Math.sqrt(dx * dx + dy * dy)
-      
-      // Oblicz prędkość (px/s)
-      const timeDelta = (now - lastMoveTime) / 1000 
+
+      const timeDelta = (now - lastMoveTime) / 1000
       if (timeDelta > 0 && dist > 0) {
         const speed = dist / timeDelta
         setMouseSpeeds((prev) => [...prev, speed])
@@ -92,11 +103,11 @@ const Zad1 = () => {
   // Listener: scrollowanie
   useEffect(() => {
     const handleScroll = () => {
-      if (taskCompleted) return 
-      
+      if (taskCompleted) return
+
       const currentScrollY = window.scrollY
       const delta = currentScrollY - lastScrollY
-      
+
       if (delta !== 0) {
         setScrollData((prev) => [...prev, { delta, position: currentScrollY }])
         setLastScrollY(currentScrollY)
@@ -112,11 +123,9 @@ const Zad1 = () => {
   }, [lastScrollY, taskCompleted])
 
   const handleProductClick = async (productId) => {
-    // Zapisz kliknięty produkt
     const updatedClickedProducts = [...clickedProducts, productId]
     setClickedProducts(updatedClickedProducts)
-    
-    // Sprawdź czy to prawidłowy produkt
+
     if (!isCorrectProduct(contentMode, productId)) return
 
     setTaskCompleted(true)
@@ -125,58 +134,66 @@ const Zad1 = () => {
     const loginTask = localStorage.getItem('loginTask')
     const isLogin = loginMode && loginTask === 'zad1'
 
-    // OBLICZ WEKTOR CECH 
     const endTime = Date.now()
     const duration = startTime ? (endTime - startTime) / 1000 : 1
 
-    // 1. TOTAL TIME [s]
     const total_time = Number(duration.toFixed(3))
 
-    // 2. FIRST REACTION TIME [s]
-    const first_reaction_time = firstMoveTime 
+    const first_reaction_time = firstMoveTime
       ? Number(((firstMoveTime - startTime) / 1000).toFixed(3))
       : 0
 
-    // 3. TOTAL SCROLL DISTANCE [px]
-    const total_scroll_distance = scrollData.reduce((sum, s) => sum + Math.abs(s.delta), 0)
+    const total_scroll_distance = scrollData.reduce(
+      (sum, s) => sum + Math.abs(s.delta),
+      0
+    )
 
-    // 4. SCROLL DIRECTION CHANGES [-]
     let scroll_direction_changes = 0
     for (let i = 1; i < scrollData.length; i++) {
-      if ((scrollData[i].delta > 0 && scrollData[i-1].delta < 0) ||
-          (scrollData[i].delta < 0 && scrollData[i-1].delta > 0)) {
+      if (
+        (scrollData[i].delta > 0 && scrollData[i - 1].delta < 0) ||
+        (scrollData[i].delta < 0 && scrollData[i - 1].delta > 0)
+      ) {
         scroll_direction_changes++
       }
     }
 
-    // 5. TOTAL CLICKS [-]
-    const total_clicks = updatedClickedProducts.length  
+    const total_clicks = updatedClickedProducts.length
+    const clicks_before_correct = updatedClickedProducts.length
 
-    // 6. CLICKS BEFORE CORRECT [-]
-    const clicks_before_correct = updatedClickedProducts.length  
+    const avg_mouse_speed =
+      mouseSpeeds.length > 0
+        ? Number(
+            (
+              mouseSpeeds.reduce((a, b) => a + b, 0) / mouseSpeeds.length
+            ).toFixed(2)
+          )
+        : 0
 
-    // 7. AVG MOUSE SPEED [px/s]
-    const avg_mouse_speed = mouseSpeeds.length > 0
-      ? Number((mouseSpeeds.reduce((a, b) => a + b, 0) / mouseSpeeds.length).toFixed(2))
-      : 0
-
-    // 8. MOUSE SPEED VARIANCE [px/s]
     let mouse_speed_variance = 0
     if (mouseSpeeds.length > 1) {
-      const mean = mouseSpeeds.reduce((a, b) => a + b, 0) / mouseSpeeds.length
-      const variance = mouseSpeeds.reduce((sum, speed) => sum + Math.pow(speed - mean, 2), 0) / mouseSpeeds.length
+      const mean =
+        mouseSpeeds.reduce((a, b) => a + b, 0) / mouseSpeeds.length
+      const variance =
+        mouseSpeeds.reduce(
+          (sum, speed) => sum + Math.pow(speed - mean, 2),
+          0
+        ) / mouseSpeeds.length
       mouse_speed_variance = Number(Math.sqrt(variance).toFixed(2))
     }
 
-    // 9. PRODUCTS HOVERED [-]
     const products_hovered = hoveredProducts.size
 
-    // 10. AVG HOVER DURATION [s]
-    const avg_hover_duration = hoverDurations.length > 0
-      ? Number((hoverDurations.reduce((a, b) => a + b, 0) / hoverDurations.length).toFixed(3))
-      : 0
+    const avg_hover_duration =
+      hoverDurations.length > 0
+        ? Number(
+            (
+              hoverDurations.reduce((a, b) => a + b, 0) /
+              hoverDurations.length
+            ).toFixed(3)
+          )
+        : 0
 
-    // ostateczny wektor
     const vector = [
       total_time,
       first_reaction_time,
@@ -191,13 +208,12 @@ const Zad1 = () => {
     ]
 
     if (isLogin) {
-      // tryb logowania biometrycznego
       try {
         const res = await axios.post('http://localhost:5001/login_biometric', {
           first_name: localStorage.getItem('first_name'),
           last_name: localStorage.getItem('last_name'),
-          task_number: 1,  // Zadanie 1
-          vector_login: vector,
+          task_number: 1,
+          vector_login: vector
         })
         setLoginSuccess(res.data.authenticated)
         setLoginDistance(res.data.distance || 0)
@@ -214,7 +230,6 @@ const Zad1 = () => {
       }
       setShowLoginResult(true)
     } else {
-      // tryb rejestracji – zapisujemy wektor zadania
       const storedUserId = localStorage.getItem('user_id')
 
       if (!storedUserId) {
@@ -223,10 +238,10 @@ const Zad1 = () => {
       }
 
       try {
-        const res = await axios.post('http://localhost:5001/api/save_task_vector', {
+        await axios.post('http://localhost:5001/api/save_task_vector', {
           user_id: Number(storedUserId),
           task_name: 'Zad1',
-          feature_vector: vector,
+          feature_vector: vector
         })
       } catch (err) {
         console.error('Błąd zapisu wektora:', err.response?.data || err.message)
@@ -256,17 +271,21 @@ const Zad1 = () => {
       <div className="flex-1 bg-gray-50 py-6 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="space-y-4">
-            {products.map((product) => (
+            {shuffledProducts.map((product) => (
               <div
                 key={product.id}
                 onClick={() => handleProductClick(product.id)}
                 onMouseEnter={() => {
                   setHoveredProducts((prev) => new Set(prev).add(product.id))
-                  setHoverStartTimes((prev) => ({ ...prev, [product.id]: Date.now() }))
+                  setHoverStartTimes((prev) => ({
+                    ...prev,
+                    [product.id]: Date.now()
+                  }))
                 }}
                 onMouseLeave={() => {
                   if (hoverStartTimes[product.id]) {
-                    const duration = (Date.now() - hoverStartTimes[product.id]) / 1000
+                    const duration =
+                      (Date.now() - hoverStartTimes[product.id]) / 1000
                     setHoverDurations((prev) => [...prev, duration])
                   }
                 }}

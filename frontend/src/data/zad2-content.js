@@ -1,62 +1,48 @@
 const registrationArticle = `
-  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+  Coraz więcej serwisów internetowych próbuje odejść od klasycznego logowania za pomocą hasła. Powód jest prosty: ludzie tworzą słabe hasła, używają ich wielokrotnie w różnych miejscach i często zapisują je w notatnikach lub w przeglądarce. W efekcie jedno wyciekłe hasło może otworzyć drogę do wielu kont naraz.
 
-  Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
+  Zamiast tego coraz większą popularność zyskują systemy oparte na biometrii behawioralnej. Zamiast mierzyć odcisk palca czy obraz twarzy, analizują one sposób korzystania z komputera – na przykład sposób poruszania myszą, tempo przewijania strony czy sposób klikania w elementy interfejsu. Dla człowieka te różnice są niewidoczne, ale algorytm potrafi wychwycić charakterystyczny „styl” użytkownika.
 
-  Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.
+  Dzięki temu możliwe jest stworzenie profilu biometrycznego, który nie przechowuje konkretnego hasła, ale opisuje zachowanie użytkownika w postaci wektora liczb. Podczas kolejnych wizyt system nie prosi o hasło, lecz sprawdza, czy obecne zachowanie jest wystarczająco podobne do zapisanego profilu.
 
-  Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
+  Takie podejście nie jest pozbawione wyzwań. Użytkownik może być zmęczony, korzystać z innej myszki lub pracować na laptopie zamiast na komputerze stacjonarnym – a to wpływa na ruchy kursora i tempo interakcji. Dlatego system musi być na tyle „elastyczny”, żeby uwzględniać naturalną zmienność zachowania, a jednocześnie na tyle czuły, by odróżnić prawdziwego użytkownika od osoby próbującej podszyć się pod niego.
+`;
 
-  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+const loginArticle = `
+  Tradycyjne logowanie opiera się na prostym schemacie: użytkownik podaje login i hasło, a system sprawdza, czy dane się zgadzają. Ten model działa od lat, ale coraz częściej okazuje się niewystarczający. Wyciek baz haseł, ataki phishingowe oraz używanie tych samych danych logowania w wielu serwisach sprawiają, że samo hasło przestaje być wystarczającym zabezpieczeniem.
 
-  Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
+  Jednym z podejść do poprawy bezpieczeństwa jest uwierzytelnianie wieloskładnikowe, na przykład połączenie hasła z kodem SMS lub powiadomieniem w aplikacji mobilnej. To rozwiązanie zwiększa poziom ochrony, ale jednocześnie bywa uciążliwe dla użytkownika, który musi każdorazowo wykonywać dodatkowe kroki.
 
-  Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.
+  Systemy biometrii behawioralnej próbują znaleźć kompromis między wygodą a bezpieczeństwem. Zamiast zmuszać użytkownika do wpisywania kolejnych kodów, analizują sposób, w jaki korzysta on z interfejsu: jak szybko przewija stronę, jak długo zatrzymuje się przy danym fragmencie tekstu, jak często zmienia decyzję przy wyborze odpowiedzi czy jak płynny jest jego ruch kursora.
 
-  Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
-
-  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-  Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-
-  Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.
-
-  Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
-
-  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-  Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-
-  Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.
-
-  Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
+  W praktyce oznacza to, że proces logowania może odbywać się „w tle”. Użytkownik wykonuje pozornie zwykłe zadanie – czyta artykuł, odpowiada na pytanie lub wybiera produkt – a system w tym czasie sprawdza, czy jego zachowanie pasuje do zapisanego wcześniej profilu. Jeśli tak, dostęp zostaje przyznany bez konieczności wpisywania hasła.
 `;
 
 export const zad2Content = {
   registration: {
-    title: "Artykuł do przeczytania",
-    instruction: "Przeczytaj artykuł poniżej, a następnie odpowiedz na pytanie",
+    title: "Biometria behawioralna w logowaniu bez hasła",
+    instruction: "Przeczytaj artykuł poniżej, a następnie odpowiedz na pytanie.",
     article: registrationArticle,
     question: "Jakie jest główne przesłanie artykułu?",
     answers: [
-      { id: 'A', label: 'Odpowiedz A' },
-      { id: 'B', label: 'Odpowiedz B' },
-      { id: 'C', label: 'Odpowiedz C' },
+      { id: 'A', label: 'Hasła są całkowicie bezpieczne i nie wymagają zmian.' },
+      { id: 'B', label: 'Styl korzystania z komputera może być użyty jako forma biometrii.' },
+      { id: 'C', label: 'Najlepszym rozwiązaniem jest zapisywanie haseł na kartce.' },
     ],
-    correctAnswer: 'B' // Prawidłowa odpowiedź
+    correctAnswer: 'B'
   },
   
   login: {
-    title: "Artykuł do przeczytania",
-    instruction: "Przeczytaj artykuł poniżej, a następnie odpowiedz na pytanie",
-    article: registrationArticle, // TYMCZASOWO - ten sam artykuł
-    question: "Jakie jest główne przesłanie artykułu?",
+    title: "Logowanie w tle – jak działa biometria zachowania?",
+    instruction: "Przeczytaj artykuł poniżej, a następnie odpowiedz na pytanie.",
+    article: loginArticle,
+    question: "Co wyróżnia biometrię behawioralną w porównaniu z tradycyjnym logowaniem?",
     answers: [
-      { id: 'A', label: 'Odpowiedz A' },
-      { id: 'B', label: 'Odpowiedz B' },
-      { id: 'C', label: 'Odpowiedz C' },
+      { id: 'A', label: 'Wymaga wpisywania dłuższego i bardziej skomplikowanego hasła.' },
+      { id: 'B', label: 'Opiera się wyłącznie na jednorazowym kodzie SMS.' },
+      { id: 'C', label: 'Analizuje sposób korzystania z interfejsu zamiast polegać wyłącznie na haśle.' },
     ],
-    correctAnswer: 'B' // TYMCZASOWO
+    correctAnswer: 'C'
   }
 };
 
