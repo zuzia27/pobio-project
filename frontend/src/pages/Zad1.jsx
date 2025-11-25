@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { Image } from 'lucide-react'
 import UserHeader from '../components/UserHeader'
 import TaskCompletionModal from '../components/TaskCompletionModal'
 import LoginResultModal from '../components/LoginResultModal'
@@ -7,7 +6,7 @@ import axios from 'axios'
 import { getZad1Content, isCorrectProduct } from '../data/zad1-content'
 import { getContentMode } from '../helpers'
 
-// 🔁 Funkcja mieszająca tablicę (poza komponentem!)
+// Funkcja mieszająca tablicę 
 const shuffleArray = (array) => {
   const copy = [...array]
   for (let i = copy.length - 1; i > 0; i--) {
@@ -17,15 +16,10 @@ const shuffleArray = (array) => {
   return copy
 }
 
-const ProductImage = () => (
-  <Image className="w-full h-full text-purple-400" strokeWidth={1.5} />
-)
-
 const Zad1 = () => {
   const [contentMode] = useState(() => getContentMode())
   const [content] = useState(() => getZad1Content(contentMode))
 
-  // 🧩 Tu tworzymy jednorazowo przetasowaną listę produktów
   const [shuffledProducts] = useState(() => shuffleArray(content.products))
 
   const [showModal, setShowModal] = useState(false)
@@ -134,20 +128,25 @@ const Zad1 = () => {
     const loginTask = localStorage.getItem('loginTask')
     const isLogin = loginMode && loginTask === 'zad1'
 
+    // OBLICZ WEKTOR CECH
     const endTime = Date.now()
     const duration = startTime ? (endTime - startTime) / 1000 : 1
 
+    // 1. TOTAL TIME [s]
     const total_time = Number(duration.toFixed(3))
 
+    // 2. FIRST REACTION TIME [s]
     const first_reaction_time = firstMoveTime
       ? Number(((firstMoveTime - startTime) / 1000).toFixed(3))
       : 0
 
+    // 3. TOTAL SCROLL DISTANCE [px]
     const total_scroll_distance = scrollData.reduce(
       (sum, s) => sum + Math.abs(s.delta),
       0
     )
 
+    // 4. SCROLL DIRECTION CHANGES [-]
     let scroll_direction_changes = 0
     for (let i = 1; i < scrollData.length; i++) {
       if (
@@ -158,9 +157,13 @@ const Zad1 = () => {
       }
     }
 
+    // 5. TOTAL CLICKS [-]
     const total_clicks = updatedClickedProducts.length
+
+    // 6. CLICKS BEFORE CORRECT [-]
     const clicks_before_correct = updatedClickedProducts.length
 
+    // 7. AVG MOUSE SPEED [px/s]
     const avg_mouse_speed =
       mouseSpeeds.length > 0
         ? Number(
@@ -170,6 +173,7 @@ const Zad1 = () => {
           )
         : 0
 
+    // 8. MOUSE SPEED VARIANCE [px/s]
     let mouse_speed_variance = 0
     if (mouseSpeeds.length > 1) {
       const mean =
@@ -182,8 +186,10 @@ const Zad1 = () => {
       mouse_speed_variance = Number(Math.sqrt(variance).toFixed(2))
     }
 
+    // 9. PRODUCTS HOVERED [-]
     const products_hovered = hoveredProducts.size
 
+    // 10. AVG HOVER DURATION [s]
     const avg_hover_duration =
       hoverDurations.length > 0
         ? Number(
@@ -193,7 +199,8 @@ const Zad1 = () => {
             ).toFixed(3)
           )
         : 0
-
+        
+    // ostateczny wektor
     const vector = [
       total_time,
       first_reaction_time,
@@ -292,10 +299,6 @@ const Zad1 = () => {
                 className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer hover:border-indigo-300"
               >
                 <div className="flex flex-col sm:flex-row gap-6 sm:gap-8">
-                  <div className="w-28 h-28 flex-shrink-0 mx-auto sm:mx-0">
-                    <ProductImage />
-                  </div>
-
                   <div className="flex-1 min-w-0">
                     <h2 className="text-lg font-semibold text-gray-900 mb-2">
                       {product.name}

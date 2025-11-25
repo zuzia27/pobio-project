@@ -4,7 +4,7 @@ const registrationProducts = [
   { id: 3, name: 'Szklanka', description: 'Stylowa szklanka w odcieniu zieleni. Pojemność 300ml, idealna do napojów.', price: 22 },
   { id: 4, name: 'Kubek do kawy', description: 'Niebieski kubek ceramiczny z wygodnym uchwytem. Pojemność 350ml.', price: 55 },
   { id: 5, name: 'Zestaw akcesoriów kuchennych', description: 'Kompletny zestaw narzędzi kuchennych z drewnianymi uchwytami. 5 elementów.', price: 89 },
-  { id: 6, name: 'Kubek ceramiczny', description: 'Piękny kubek w kobaltowym odcieniu niebieskiego. Doskonały do codziennego użytku.', price: 39 }, // ← PRAWIDŁOWA ODPOWIEDŹ (niebieski, poniżej 50zł)
+  { id: 6, name: 'Kubek ceramiczny', description: 'Piękny kubek w kobaltowym odcieniu niebieskiego. Doskonały do codziennego użytku.', price: 39 }, 
   { id: 7, name: 'Szklana miska', description: 'Przezroczysta szklana miska o średnicy 20 cm. Idealna do sałatek i owoców.', price: 32 },
   { id: 8, name: 'Kubek termiczny stalowy', description: 'Termos ze stali nierdzewnej z pokrywką. Utrzymuje temperaturę przez 6 godzin.', price: 75 },
   { id: 9, name: 'Filiżanka z podstawką', description: 'Delikatna filiżanka porcelanowa w słonecznym żółtym kolorze z pasującą podstawką.', price: 42 },
@@ -24,7 +24,7 @@ const loginProducts = [
   { id: 9, name: 'Karafka szklana',  description: 'Karafka na wodę wykonana z grubego szkła.',  price: 58  },
   { id: 10,   name: 'Kubek zielony',  description: 'Ceramiczny kubek w ciemnozielonym odcieniu.', price: 24  },
   { id: 11,  name: 'Szklanka do soków', description: 'Uniwersalna szklanka 300ml, lekko barwiona.', price: 18 },
-  { id: 12,  name: 'Szklanka klasyczna',  description: 'Klasyczna, przezroczysta szklanka wykonana z cienkiego szkła. 250ml.',  price: 19  } //PRAWIDŁOWA
+  { id: 12,  name: 'Szklanka klasyczna',  description: 'Klasyczna, przezroczysta szklanka wykonana z cienkiego szkła - 250ml.',  price: 19  } 
 ];
 
 
@@ -33,12 +33,12 @@ export const zad1Content = {
     title: "Zadanie: Znajdź niebieski kubek w cenie poniżej 50 zł",
     storeName: "BioShop",
     products: registrationProducts,
-    correctProductId: 6 // Niebieski kubek, 39 zł
+    correctProductId: 6 
   },
   
   login: {
     title: "Zadanie: Znajdź przezroczystą szklankę w cenie poniżej 30 zł",
-    storeName: "BioShop – logowanie",
+    storeName: "BioShop",
     products: loginProducts,
     correctProductId: 12,
   }

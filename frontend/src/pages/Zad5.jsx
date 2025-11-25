@@ -4,14 +4,14 @@ import UserHeader from '../components/UserHeader'
 import TaskCompletionModal from '../components/TaskCompletionModal'
 import LoginResultModal from '../components/LoginResultModal'
 import axios from 'axios'
-import { getZad5Content, isCorrectProject } from '../data/zad5-content'
+import { getZad5Content, isCorrectItem } from '../data/zad5-content'
 import { getContentMode } from '../helpers'
 
 const Zad5 = () => {
   const [contentMode] = useState(() => getContentMode())
   const [content] = useState(() => getZad5Content(contentMode))
   const [tabs] = useState(() => content.tabs)
-  const [projects] = useState(() => content.projects)
+  const [projects] = useState(() => content.projects || [])
   const [pageContent] = useState(() => content.pageContent)
   const [tabOrder] = useState(() => content.tabOrder)
   
@@ -31,6 +31,8 @@ const Zad5 = () => {
   const [clickTimes, setClickTimes] = useState([])
   const [clickHistory, setClickHistory] = useState([])
   const [tabsVisited, setTabsVisited] = useState(new Set())
+  const [teamPageEnterTime, setTeamPageEnterTime] = useState(null)
+  const [wrongMemberClicks, setWrongMemberClicks] = useState(0)
   const [projectsPageEnterTime, setProjectsPageEnterTime] = useState(null)
   const [wrongProjectClicks, setWrongProjectClicks] = useState(0)
   
@@ -111,9 +113,14 @@ const Zad5 = () => {
     setActiveTab(parentId)
     setActiveSubTab(subTabId)
     
-    // Czas wejścia na odpowiednią podstronę
-    if (parentId === content.projectsPageId.parent && subTabId === content.projectsPageId.sub) {
+    // Czas wejścia na stronę projektów (rejestracja)
+    if (content.projectsPageId && parentId === content.projectsPageId.parent && subTabId === content.projectsPageId.sub) {
       setProjectsPageEnterTime(now)
+    }
+    
+    // Czas wejścia na stronę zespołu (logowanie)
+    if (content.teamPageId && parentId === content.teamPageId.parent && subTabId === content.teamPageId.sub) {
+      setTeamPageEnterTime(now)
     }
   }
 
@@ -122,15 +129,38 @@ const Zad5 = () => {
     
     // Zapisz kliknięcie 
     setClickTimes((prev) => [...prev, now])
-    setClickHistory((prev) => [...prev, { type: 'item', id: projectId, time: now }])
+    setClickHistory((prev) => [...prev, { type: 'project', id: projectId, time: now }])
     
-    // Sprawdź czy to poprawny element
-    if (!isCorrectProject(contentMode, projectId)) {
-      // Błędny element
+    // Sprawdź czy to poprawny projekt
+    if (!isCorrectItem(contentMode, projectId)) {
+      // Błędny projekt
       setWrongProjectClicks((prev) => prev + 1)
       return 
     }
+
+    // POPRAWNY PROJEKT - dokończ zadanie
+    await completeTask(now)
+  }
+
+  const handleMemberClick = async (memberId) => {
+    const now = Date.now()
     
+    // Zapisz kliknięcie 
+    setClickTimes((prev) => [...prev, now])
+    setClickHistory((prev) => [...prev, { type: 'member', id: memberId, time: now }])
+    
+    // Sprawdź czy to poprawny członek zespołu
+    if (!isCorrectItem(contentMode, memberId)) {
+      // Błędny członek
+      setWrongMemberClicks((prev) => prev + 1)
+      return 
+    }
+
+    // POPRAWNY CZŁONEK - dokończ zadanie
+    await completeTask(now)
+  }
+
+  const completeTask = async (now) => {
     // OBLICZ WEKTOR CECH
     const endTime = now
     const duration = startTime ? (endTime - startTime) / 1000 : 1
@@ -158,7 +188,8 @@ const Zad5 = () => {
     const wrong_path_clicks = clickHistory.filter(c => {
       if (c.type === 'tab') return c.id !== content.correctPath.tab
       if (c.type === 'subtab') return !(c.parent === content.correctPath.subtab.parent && c.id === content.correctPath.subtab.sub)
-      if (c.type === 'item') return c.id !== content.correctPath.project
+      if (c.type === 'project') return content.correctPath.project && c.id !== content.correctPath.project
+      if (c.type === 'member') return content.correctPath.member && c.id !== content.correctPath.member
       return false
     }).length
 
@@ -194,13 +225,17 @@ const Zad5 = () => {
       ? Number((mouseSpeeds.reduce((a, b) => a + b, 0) / mouseSpeeds.length).toFixed(2))
       : 0
 
-    // 11. READING TIME ON PROJECTS [s]
-    const reading_time_on_projects = projectsPageEnterTime
+    // 11. READING TIME ON TARGET PAGE [s]
+    // Dla rejestracji: czas na stronie projektów, dla logowania: czas na stronie zespołu
+    const reading_time_on_target_page = projectsPageEnterTime
       ? Number(((now - projectsPageEnterTime) / 1000).toFixed(3))
+      : teamPageEnterTime
+      ? Number(((now - teamPageEnterTime) / 1000).toFixed(3))
       : 0
 
-    // 12. WRONG PROJECT CLICKS [-]
-    const wrong_project_clicks_final = wrongProjectClicks
+    // 12. WRONG ITEM CLICKS [-]
+    // Suma błędnych kliknięć w projekty + członków zespołu
+    const wrong_item_clicks = wrongProjectClicks + wrongMemberClicks
 
     const vector = [
       total_time,
@@ -213,8 +248,8 @@ const Zad5 = () => {
       path_efficiency,
       exploration_systematicity,
       avg_mouse_speed,
-      reading_time_on_projects,
-      wrong_project_clicks_final
+      reading_time_on_target_page,
+      wrong_item_clicks
     ]
 
     setTaskCompleted(true)
@@ -366,18 +401,33 @@ const Zad5 = () => {
             </div>
           )}
 
-          {activeTab === 'about' && activeSubTab === 'team' && (
+          {activeTab === 'about' && activeSubTab === 'team' && pageContent.aboutTeam && (
             <div className="bg-white shadow-sm rounded-lg p-8">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">{pageContent.aboutTeam.title}</h2>
               <p className="text-gray-700 leading-relaxed mb-6">
                 {pageContent.aboutTeam.intro}
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {pageContent.aboutTeam.cards.map((card, idx) => (
-                  <div key={idx} className="bg-gray-50 p-6 rounded-lg">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{card.title}</h3>
-                    <p className="text-gray-600">{card.description}</p>
-                </div>
+                {pageContent.aboutTeam.members && pageContent.aboutTeam.members.map((member) => (
+                  <div 
+                    key={member.id}
+                    onClick={() => handleMemberClick(member.id)}
+                    className={`bg-gray-50 p-6 rounded-lg border-l-4 ${member.borderColor} cursor-pointer ${member.hoverColor} hover:shadow-lg transition-all`}
+                  >
+                    <h3 className="text-xl font-bold text-gray-900 mb-1">{member.name}</h3>
+                    <p className="text-sm text-indigo-600 font-medium mb-3">{member.role}</p>
+                    <p className="text-gray-700 mb-4">{member.description}</p>
+                    <div className="border-t border-gray-200 pt-3 mt-3">
+                      <p className="text-sm font-semibold text-gray-800 mb-2">Realizowane projekty:</p>
+                      <ul className="space-y-1">
+                        {member.projects.map((project, idx) => (
+                          <li key={idx} className="text-sm text-gray-600">
+                            • <span className="font-medium">{project.name}</span> - {project.client} ({project.date})
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
@@ -433,7 +483,7 @@ const Zad5 = () => {
             </div>
           )}
 
-          {activeTab === 'services' && activeSubTab === 'projects' && (
+          {activeTab === 'services' && activeSubTab === 'projects' && projects.length > 0 && (
             <div className="bg-white shadow-sm rounded-lg p-8">
               <h2 className="text-3xl font-bold text-gray-900 mb-6">{pageContent.servicesProjects.title}</h2>
               <p className="text-gray-700 leading-relaxed mb-6">
@@ -447,14 +497,14 @@ const Zad5 = () => {
                     onClick={() => handleProjectClick(project.id)}
                     className={`bg-gray-50 p-6 rounded-lg border-l-4 ${project.borderColor} cursor-pointer hover:shadow-lg ${project.hoverColor} transition-all`}
                   >
-                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex justify-between items-start mb-3">
                       <h3 className="text-xl font-bold text-gray-900">{project.name}</h3>
                       <span className="text-sm text-gray-500">{project.date}</span>
-                  </div>
-                  <p className="text-gray-700 mb-3">
+                    </div>
+                    <p className="text-gray-700 mb-3">
                       {project.description}
-                  </p>
-                  <p className="text-sm text-gray-600">
+                    </p>
+                    <p className="text-sm text-gray-600">
                       {project.scope}
                     </p>
                     <p className="text-xs text-gray-500 mt-2">{project.reference}</p>
@@ -463,6 +513,7 @@ const Zad5 = () => {
               </div>
             </div>
           )}
+
 
           {activeTab === 'contact' && activeSubTab === 'info' && (
             <div className="bg-white shadow-sm rounded-lg p-8">
